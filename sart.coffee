@@ -46,14 +46,22 @@ jq$ ->
 		res_table.append res_tbody
 		# add table as sortable
 		jq$("table.list").before res_table
-		res_table.tablesorter({
-            sortList: [ [ 7, 1 ], [ 8, 1 ] ]
-        })
-		# construct origin table show button 
+		res_table.tablesorter( {sortList: [[7,1], [8,1]]} )
+		# construct control buttons 
 		show_button = jq$('<button id="show_button">元の表を表示</button>').click ->
 			jq$("table.list").toggle()
 			false
+		sort_button = jq$('<button id="sort_button">セメスター順に並べ替え</button>').click ->
+			sorting = [[7,0],[8,0]]
+			res_table.trigger("sorton",[sorting])
+			false
+		sort_rev_button = jq$('<button id="sort_rev_button">セメスター逆順に並べ替え</button>').click ->
+			sorting = [[7,1],[8,1]]
+			res_table.trigger("sorton",[sorting])
+			false
 		jq$("table.list").before show_button
+		res_table.before sort_button
+		res_table.before sort_rev_button
 		# hide origin table
 		jq$("table.list").hide()
 

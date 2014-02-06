@@ -46,7 +46,9 @@ jq$ ->
 		res_table.append res_tbody
 		# add table as sortable
 		jq$("table.list").before res_table
-		res_table.tablesorter()
+		res_table.tablesorter({
+            sortList: [ [ 7, 1 ], [ 8, 1 ] ]
+        })
 		# construct origin table show button 
 		show_button = jq$('<button id="show_button">元の表を表示</button>').click ->
 			jq$("table.list").toggle()

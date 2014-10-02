@@ -7,16 +7,16 @@ jq$ ->
 		jq$("head").append '<link>'
 		css = jq$("head").children ':last'
 		css.attr {
-    		rel: 'stylesheet'
-    		type: 'text/css'
-    		href: 'https://yacohana.info/sart/assets/style.css'
+				rel: 'stylesheet'
+				type: 'text/css'
+				href: 'https://yacohana.info/sart/assets/style.css'
 		}
 		# html result table -> Array data[][]
 		data = []
 		jq$('tr').each (i) ->
 			data[i] = []
 			jq$('td', jq$(@)).each (j) ->
-		        data[i][j] = jq$(@).text().trim()
+				data[i][j] = jq$(@).text().trim()
 		# construct table tag
 		res_table = jq$('<table id="res_table">')
 		res_tr = jq$('<tr>')
@@ -27,6 +27,8 @@ jq$ ->
 		res_tbody = jq$('<tbody>')
 		# construct table body
 		flag = false # group name twice
+		ratings = new Object # ratings count
+		credits = new Object # credits count
 		for row, i in data
 			continue if i < 2
 			if row.length < 2 # group name
@@ -43,6 +45,10 @@ jq$ ->
 				for str, j in row
 					res_tr.append "<td>#{str}</td>" if j!=4
 				res_tbody.append res_tr
+				ratings[row[5]] = 0 unless ratings[row[5]]?
+				credits[row[5]] = 0 unless credits[row[5]]?
+				ratings[row[5]] += 1
+				credits[row[5]] += parseInt row[3] if [row[3]]?
 		res_table.append res_tbody
 		# add table as sortable
 		jq$("table.list").before res_table
@@ -59,9 +65,32 @@ jq$ ->
 			sorting = [[7,1],[8,1]]
 			res_table.trigger("sorton",[sorting])
 			false
+		count_button = jq$('<button id="count_button">評価/単位数カウント</button>').click ->
+			str = "<strong>成績別評価数</strong><br>"
+			sum = 0
+			for rating, val of ratings
+				if val? and !isNaN val and val != 0
+					if rating is ""
+						str += "評価なし : #{val}<br>"
+					else
+						str += "#{rating} : #{val}<br>"
+					sum += val
+			str += "合計 : #{sum}<br>------------------------<br><br><strong>成績別単位数</strong><br>"
+			sum = 0
+			for credit, val of credits
+				if val? and !isNaN val and val != 0
+					if credit is ""
+						str += "評価なし : #{val}<br>"
+					else
+						str += "#{credit} : #{val}<br>"
+					sum += val
+			str += "合計\t : #{sum}<br>------------------------<br>"
+			count_float = jq$("<div id='count_float'><p>#{str}</p><div>")
+			openFloatDialog(count_float,300,"評価/単位数カウント")
+			false
 		jq$("table.list").before show_button
 		res_table.before sort_button
 		res_table.before sort_rev_button
+		res_table.before count_button
 		# hide origin table
 		jq$("table.list").hide()
-

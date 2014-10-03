@@ -66,7 +66,7 @@ jq$ ->
 			res_table.trigger("sorton",[sorting])
 			false
 		count_button = jq$('<button id="count_button">評価/単位数カウント</button>').click ->
-			str = "<strong>成績別評価数</strong><br>"
+			str = "<p><strong>評価数カウント</strong><br>"
 			sum = 0
 			for rating, val of ratings
 				if val? and !isNaN val and val != 0
@@ -75,7 +75,7 @@ jq$ ->
 					else
 						str += "#{rating} : #{val}<br>"
 					sum += val
-			str += "合計 : #{sum}<br>------------------------<br><br><strong>成績別単位数</strong><br>"
+			str += "合計 : #{sum}</p><hr><br><p><strong>単位数カウント</strong><br>"
 			sum = 0
 			for credit, val of credits
 				if val? and !isNaN val and val != 0
@@ -84,8 +84,8 @@ jq$ ->
 					else
 						str += "#{credit} : #{val}<br>"
 					sum += val
-			str += "合計\t : #{sum}<br>------------------------<br>"
-			count_float = jq$("<div id='count_float'><p>#{str}</p><div>")
+			str += "合計 : #{sum}</p><hr><br>"
+			count_float = jq$("<div id='count_float'>#{str}<div>")
 			openFloatDialog(count_float,300,"評価/単位数カウント")
 			false
 		jq$("table.list").before show_button

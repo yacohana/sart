@@ -29,6 +29,8 @@ jq$ ->
 		flag = false # group name twice
 		ratings = new Object # ratings count
 		credits = new Object # credits count
+		ga_credits = new Object # general academic credits count
+		sp_credits = new Object # specialized credits count
 		for row, i in data
 			continue if i < 2
 			if row.length < 2 # group name
@@ -49,6 +51,12 @@ jq$ ->
 				credits[row[5]] = 0 unless credits[row[5]]?
 				ratings[row[5]] += 1
 				credits[row[5]] += parseInt row[3] if [row[3]]?
+				if String(lgroup).search("専門") is -1
+					ga_credits[row[5]] = 0 unless ga_credits[row[5]]?
+					ga_credits[row[5]] += parseInt row[3] if [row[3]]?
+				else
+					sp_credits[row[5]] = 0 unless sp_credits[row[5]]?
+					sp_credits[row[5]] += parseInt row[3] if [row[3]]?
 		res_table.append res_tbody
 		# add table as sortable
 		jq$("table.list").before res_table
@@ -65,7 +73,7 @@ jq$ ->
 			sorting = [[7,1],[8,1]]
 			res_table.trigger("sorton",[sorting])
 			false
-		count_button = jq$('<button id="count_button">評価/単位数カウント</button>').click ->
+		count_button = jq$('<button id="count_button">評価/単位数カウント・GPA表示</button>').click ->
 			str = "<p><strong>評価数カウント</strong><br>"
 			sum = 0
 			for rating, val of ratings
@@ -77,14 +85,51 @@ jq$ ->
 					sum += val
 			str += "合計 : #{sum}</p><hr><br><p><strong>単位数カウント</strong><br>"
 			sum = 0
+			gpa_frac = 0 #gra's frac
+			gpa_den = 0 # gpa's den
 			for credit, val of credits
 				if val? and !isNaN val and val != 0
 					if credit is ""
 						str += "評価なし : #{val}<br>"
 					else
 						str += "#{credit} : #{val}<br>"
+					if credit is "ＡＡ"
+						gpa_frac += 4*val
+						gpa_den += val
+					if credit is "Ａ"
+						gpa_frac += 3*val
+						gpa_den += val
+					if credit is "Ｂ"
+						gpa_frac += 2*val
+						gpa_den += val
+					if credit is "Ｃ"
+						gpa_frac += val
+						gpa_den += val
+					if credit is "Ｄ"
+						gpa_den += val
 					sum += val
-			str += "合計 : #{sum}</p><hr><br>"
+			str += "合計 : #{sum}</p><hr><br><p><strong>全学科目単位数カウント</strong><br>"
+			sum = 0
+			for credit, val of ga_credits
+				if val? and !isNaN val and val != 0
+					if credit is ""
+						str += "評価なし : #{val}<br>"
+					else
+						str += "#{credit} : #{val}<br>"
+					sum += val
+			str += "合計 : #{sum}</p><hr><br><p><strong>専門科目単位数カウント</strong><br>"
+			sum = 0
+			for credit, val of sp_credits
+				if val? and !isNaN val and val != 0
+					if credit is ""
+						str += "評価なし : #{val}<br>"
+					else
+						str += "#{credit} : #{val}<br>"
+					sum += val
+			str += "合計 : #{sum}</p><hr><br><p><strong>GPA</strong><br>"
+			gpa = gpa_frac / gpa_den
+			gpa = gpa.toPrecision 3
+			str += "GPA : #{gpa}</strong><br></p><hr><br>"
 			count_float = jq$("<div id='count_float'>#{str}<div>")
 			openFloatDialog(count_float,300,"評価/単位数カウント")
 			false
